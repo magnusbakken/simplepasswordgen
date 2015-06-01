@@ -481,7 +481,7 @@
             </summary>
             <param name="documentPath">The physical path to XML document.</param>
         </member>
-        <member name="M:PasswordGen.WebApi.Controllers.PasswordGeneratorController.GeneratePassword(System.Int32,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:PasswordGen.WebApi.Controllers.PasswordGeneratorController.GeneratePassword(System.Int32,System.Boolean,System.Boolean,System.Boolean,System.Boolean,PasswordGen.RandomProviders.RandomProviderType)">
             <summary>
             Generates a new random password with the specified options.
             </summary>
@@ -500,7 +500,22 @@
             Specifically, the special characters include all printable ASCII characters in the range 1-127 except the space character, letters and digits.
             </para>
             </param>
+            <param name="provider">
+            <para>
+            The randomness provider. This determines the source of the randomly generated characters in the password.
+            </para>
+            <para>
+            If you intend to use the generated passwords for real purposes, you should use the cryptographic RNG or the random.org provider.
+            The pseudo-random generator is faster, but not a good choice for generating real passwords.
+            </para>
+            </param>
             <returns>A new random password.</returns>
+        </member>
+        <member name="M:PasswordGen.WebApi.Controllers.PasswordGeneratorController.GetProviders">
+            <summary>
+            Gets a list of randomness providers.
+            </summary>
+            <returns>A list of randomness providers, with IDs and names.</returns>
         </member>
     </members>
 </doc>

@@ -1,17 +1,17 @@
 ﻿namespace PasswordGen
 {
     using System;
-    using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Security;
+    using PasswordGen.RandomProviders;
 
-    public class PasswordGenerator
+    public class PasswordGenerator : IDisposable
     {
-        private readonly Random random;
+        private readonly IRandom random;
 
-        public PasswordGenerator(int seed)
+        public PasswordGenerator(RandomProviderType providerType)
         {
-            this.random = new Random(seed);
+            this.random = RandomProviderFactory.CreateProvider(providerType);
         }
 
         public SecureString GeneratePassword(int length, IImmutableSet<char> alphabet)
@@ -29,6 +29,11 @@
         public char GenerateChar(IImmutableSet<char> alphabet)
         {
             return this.random.Choice(alphabet);
+        }
+
+        public void Dispose()
+        {
+            this.random.Dispose();
         }
     }
 }

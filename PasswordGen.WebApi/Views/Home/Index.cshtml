@@ -12,6 +12,16 @@
     function showError(xhr, status, error) {
         $("#password-error").html(error);
     }
+
+    function getPasswordStarted() {
+        $("#password-loader").removeClass("hidden");
+        $("#password-result").prop("disabled", true);
+    }
+
+    function getPasswordDone() {
+        $("#password-loader").addClass("hidden");
+        $("#password-result").prop("disabled", false);
+    }
 </script>
 
 <h1 class="page-header">Generate a password</h1>
@@ -20,7 +30,9 @@
     {
         HttpMethod = "get",
         OnSuccess = "setPassword",
-        OnFailure = "showError"
+        OnFailure = "showError",
+        OnBegin = "getPasswordStarted",
+        OnComplete = "getPasswordDone",
     };
 
     using (Ajax.BeginForm("generate", "api/passwordgen", ajaxOptions))
@@ -45,8 +57,12 @@
             @Html.EditorFor(m => m.Special)
             @Html.LabelFor(m => m.Special)
         </div>
+        <div class="editor-label">
+            @Html.LabelFor(m => m.Provider):
+            @Html.DropDownListFor(m => m.Provider, this.Model.Providers)
+        </div>
         <p>
-            <input type="submit" class="btn btn-primary btn-lg" value="Generate" /><br />
+            <input type="submit" class="btn btn-primary btn-lg" value="Generate" /> <span id="password-loader" class="loader hidden"><img src="~/Content/preloader.gif" /></span><br />
             <span id="password-error" class="label-warning"></span>
         </p>
     }

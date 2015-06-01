@@ -1,7 +1,10 @@
 ﻿namespace PasswordGen.WebApi.Models
 {
+    using System.Collections.Generic;
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
+    using System.Web.Mvc;
+    using PasswordGen.RandomProviders;
 
     public class GeneratePasswordBindingModel
     {
@@ -37,5 +40,27 @@
         [Required]
         [Display(Name = "Include special characters (e.g. !\"#$)?")]
         public bool Special { get; set; }
+
+        [Required]
+        [DefaultValue(RandomProviderType.CryptoRandom)]
+        [Display(Name = "The randomness source")]
+        public RandomProviderType Provider { get; set; }
+
+        public List<SelectListItem> Providers { get; set; }
+
+        internal static string GetProviderDescription(RandomProviderType provider)
+        {
+            switch (provider)
+            {
+                case RandomProviderType.SystemRandom:
+                    return "Pseudorandom (System.Random)";
+                case RandomProviderType.CryptoRandom:
+                    return "Cryptographically random (RNGCryptoServiceProvider)";
+                case RandomProviderType.RandomDotOrg:
+                    return "http://random.org";
+                default:
+                    return "Unknown";
+            }
+        }
     }
 }

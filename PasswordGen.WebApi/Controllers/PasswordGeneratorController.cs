@@ -1,11 +1,14 @@
-﻿using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
-
-namespace PasswordGen.WebApi.Controllers
+﻿namespace PasswordGen.WebApi.Controllers
 {
+    using System;
+    using System.Globalization;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Web.Http;
+    using PasswordGen.RandomProviders;
+    using PasswordGen.WebApi.Models;
+
     [RoutePrefix("api/passwordgen")]
     public class PasswordGeneratorController : ApiController
     {
@@ -30,6 +33,15 @@ namespace PasswordGen.WebApi.Controllers
         /// Specifically, the special characters include all printable ASCII characters in the range 1-127 except the space character, letters and digits.
         /// </para>
         /// </param>
+        /// <param name="provider">
+        /// <para>
+        /// The randomness provider. This determines the source of the randomly generated characters in the password.
+        /// </para>
+        /// <para>
+        /// If you intend to use the generated passwords for real purposes, you should use the cryptographic RNG or the random.org provider.
+        /// The pseudo-random generator is faster, but not a good choice for generating real passwords.
+        /// </para>
+        /// </param>
         /// <returns>A new random password.</returns>
         [Route("generate")]
         [AcceptVerbs("GET")]
@@ -38,33 +50,36 @@ namespace PasswordGen.WebApi.Controllers
             bool lowercase = true,
             bool uppercase = true,
             bool digits = true,
-            bool special = false)
+            bool special = false,
+            RandomProviderType provider = RandomProviderType.CryptoRandom)
         {
-            return Ok(this.GeneratePassword(length, new AlphabetOptions()
+            var options = new AlphabetOptions()
             {
                 IncludeAToZLowercase = lowercase,
                 IncludeAToZUppercase = uppercase,
                 IncludeDigits = digits,
                 IncludeSpecialCharacters = special,
-            }));
+            };
+
+            return Ok(this.GeneratePassword(length, options, provider));
         }
 
-        private string GeneratePassword(int length, AlphabetOptions alphabetOptions)
+        /// <summary>
+        /// Gets a list of randomness providers.
+        /// </summary>
+        /// <returns>A list of randomness providers, with IDs and names.</returns>
+        [Route("provider")]
+        [AcceptVerbs("GET")]
+        public IHttpActionResult GetProviders()
         {
-            if (length < 1)
-                throw PasswordLengthTooShortError();
-            else if (length > MaxPasswordLength)
-                throw PasswordLengthTooLongError();
-
-            var alphabet = alphabetOptions.CreateAlphabet();
-            if (!alphabet.Any())
-                throw EmptyAlphabetError();
-
-            var passwordGenerator = new PasswordGenerator(CryptoSeedProvider.GenerateSeed());
-            return passwordGenerator.GeneratePassword(length, alphabet).ConvertToString();
+            return Ok(Enum.GetValues(typeof(RandomProviderType))
+                .Cast<RandomProviderType>()
+                .Select(rpt => new { id = (int)rpt, name = GeneratePasswordBindingModel.GetProviderDescription(rpt) })
+                .ToList());
         }
 
         private static HttpResponseException PasswordLengthTooShortError()
+
         {
             return new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Password length must be at least 1" });
         }
@@ -78,6 +93,21 @@ namespace PasswordGen.WebApi.Controllers
         private static HttpResponseException EmptyAlphabetError()
         {
             return new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "No characters are included in the alphabet" });
+        }
+
+        private string GeneratePassword(int length, AlphabetOptions alphabetOptions, RandomProviderType providerType)
+        {
+            if (length < 1)
+                throw PasswordLengthTooShortError();
+            else if (length > MaxPasswordLength)
+                throw PasswordLengthTooLongError();
+
+            var alphabet = alphabetOptions.CreateAlphabet();
+            if (!alphabet.Any())
+                throw EmptyAlphabetError();
+
+            var passwordGenerator = new PasswordGenerator(providerType);
+            return passwordGenerator.GeneratePassword(length, alphabet).ConvertToString();
         }
     }
 }
