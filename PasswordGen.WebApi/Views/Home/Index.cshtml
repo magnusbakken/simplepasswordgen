@@ -1,0 +1,58 @@
+﻿@using System.Web.Http
+@using System.Web.Mvc
+@using PasswordGen.WebApi.Models
+@model GeneratePasswordBindingModel
+
+<script>
+    function setPassword(data, status, xhr) {
+        $("#password-result").attr("value", data);
+        $("#password-error").html("");
+    }
+
+    function showError(xhr, status, error) {
+        $("#password-error").html(error);
+    }
+</script>
+
+<h1 class="page-header">Generate a password</h1>
+@{
+    var ajaxOptions = new AjaxOptions()
+    {
+        HttpMethod = "get",
+        OnSuccess = "setPassword",
+        OnFailure = "showError"
+    };
+
+    using (Ajax.BeginForm("generate", "api/passwordgen", ajaxOptions))
+    {
+        <div class="editor-label">
+            @Html.LabelFor(m => m.Length):
+            @Html.TextBoxFor(m => m.Length, new { type = "number", min = 1, max = 100 })
+        </div>
+        <div class="editor-label">
+            @Html.EditorFor(m => m.Lowercase)
+            @Html.LabelFor(m => m.Lowercase)
+        </div>
+        <div class="editor-label">
+            @Html.EditorFor(m => m.Uppercase)
+            @Html.LabelFor(m => m.Uppercase)
+        </div>
+        <div class="editor-label">
+            @Html.EditorFor(m => m.Digits)
+            @Html.LabelFor(m => m.Digits)
+        </div>
+        <div class="editor-label">
+            @Html.EditorFor(m => m.Special)
+            @Html.LabelFor(m => m.Special)
+        </div>
+        <p>
+            <input type="submit" class="btn btn-primary btn-lg" value="Generate" /><br />
+            <span id="password-error" class="label-warning"></span>
+        </p>
+    }
+}
+<div class="editor-label"><label for="password-result">Result</label>: <input id="password-result" type="text" size="100" /></div>
+<div class="caution">
+    <h4 class="caution-header">Warning!</h4>
+    <p>This is just an experiment. The passwords are currently sent unencrypted from the server to your computer. You probably shouldn't use this for real.</p>
+</div>
