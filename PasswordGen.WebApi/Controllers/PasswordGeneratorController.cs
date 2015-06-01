@@ -74,8 +74,20 @@
         {
             return Ok(Enum.GetValues(typeof(RandomProviderType))
                 .Cast<RandomProviderType>()
-                .Select(rpt => new { id = (int)rpt, name = GeneratePasswordBindingModel.GetProviderDescription(rpt) })
+                .Select(rpt => new RandomnessProvider(rpt))
                 .ToList());
+        }
+
+        /// <summary>
+        /// Gets the randomness provider with the given ID.
+        /// </summary>
+        /// <param name="id">The ID to get.</param>
+        /// <returns>The ID and name of the randomness provider with the given ID.</returns>
+        [Route("provider/{id}")]
+        [AcceptVerbs("GET")]
+        public IHttpActionResult GetProvider(int id)
+        {
+            return Ok(new RandomnessProvider((RandomProviderType)id));
         }
 
         private static HttpResponseException PasswordLengthTooShortError()

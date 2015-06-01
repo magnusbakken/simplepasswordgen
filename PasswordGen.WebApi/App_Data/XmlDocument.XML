@@ -517,5 +517,12 @@
             </summary>
             <returns>A list of randomness providers, with IDs and names.</returns>
         </member>
+        <member name="M:PasswordGen.WebApi.Controllers.PasswordGeneratorController.GetProvider(System.Int32)">
+            <summary>
+            Gets the randomness provider with the given ID.
+            </summary>
+            <param name="id">The ID to get.</param>
+            <returns>The ID and name of the randomness provider with the given ID.</returns>
+        </member>
     </members>
 </doc>
